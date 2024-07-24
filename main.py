@@ -2,26 +2,44 @@ import os
 import json
 import argparse
 
-# Fonction pour lire la structure des dossiers et fichiers depuis un fichier JSON
+# Function to read the structure of directories and files from a JSON file
 def load_structure(json_file):
-    with open(json_file, 'r') as f:
-        structure = json.load(f)
-    return structure
+    if not os.path.isfile(json_file):
+        print(f"Error: The path '{json_file}' is not a file or does not exist.")
+        exit(1)
+    
+    try:
+        with open(json_file, 'r') as f:
+            structure = json.load(f)
+        return structure
+    except json.JSONDecodeError:
+        print(f"Error: The file '{json_file}' is not a valid JSON file.")
+        exit(1)
+    except PermissionError:
+        print(f"Error: Permission denied when trying to read the file '{json_file}'.")
+        exit(1)
 
-# Fonction pour créer les dossiers et fichiers
+# Function to create directories and files
 def create_structure(base_path, structure):
-    for name, content in structure.items():
-        path = os.path.join(base_path, name)
-        if isinstance(content, dict):
-            if not os.path.exists(path):
-                os.makedirs(path)
-            create_structure(path, content)
-        else:
-            if not os.path.exists(path):
-                with open(path, 'w') as f:
-                    f.write(content)
+    try:
+        for name, content in structure.items():
+            path = os.path.join(base_path, name)
+            if isinstance(content, dict):
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                create_structure(path, content)
+            else:
+                if not os.path.exists(path):
+                    with open(path, 'w') as f:
+                        f.write(content)
+    except PermissionError:
+        print(f"Error: Permission denied when trying to create '{path}'.")
+        exit(1)
+    except Exception as e:
+        print(f"Error: An unexpected error occurred: {e}")
+        exit(1)
 
-# Fonction pour générer le contenu du diagramme
+# Function to generate the content of the diagram
 def generate_diagram(structure, indent=0):
     diagram = ""
     for name, content in structure.items():
@@ -33,23 +51,40 @@ def generate_diagram(structure, indent=0):
             diagram += generate_diagram(content, indent + 1)
     return diagram
 
-# Fonction principale
-def main(json_path):
-    
+# Main function
+def main(json_path, target_folder):
+    if not os.path.exists(target_folder):
+        print(f"Error: The target folder '{target_folder}' does not exist.")
+        exit(1)
+    if not os.path.isdir(target_folder):
+        print(f"Error: The target folder '{target_folder}' is not a directory.")
+        exit(1)
+
+    # Load the structure
     structure = load_structure(json_path)
-    
-    create_structure(".", structure)
 
-    diagram_content = "225lol/\n" + generate_diagram(structure)
-    diagram_path = os.path.join(".", "diagram.md")
-    with open(diagram_path, 'w') as diagram_file:
-        diagram_file.write(diagram_content)
+    # Create the directory and file structure
+    create_structure(target_folder, structure)
 
-    print("Structure des dossiers et fichiers créée avec succès et diagram.md mis à jour.")
+    # Generate and write the diagram to diagram.md
+    diagram_content = os.path.basename(target_folder) + "/\n" + generate_diagram(structure)
+    diagram_path = os.path.join(target_folder, "diagram.md")
+    try:
+        with open(diagram_path, 'w') as diagram_file:
+            diagram_file.write(diagram_content)
+    except PermissionError:
+        print(f"Error: Permission denied when trying to write the file '{diagram_path}'.")
+        exit(1)
+    except Exception as e:
+        print(f"Error: An unexpected error occurred while writing the file '{diagram_path}': {e}")
+        exit(1)
+
+    print("Directory and file structure created successfully and diagram.md updated.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate directory structure from a JSON file.')
     parser.add_argument('json_path', type=str, help='Path to the JSON file defining the structure')
+    parser.add_argument('target_folder', type=str, help='Path to the target folder where the structure will be created')
     
     args = parser.parse_args()
-    main(args.json_path)
+    main(args.json_path, args.target_folder)
