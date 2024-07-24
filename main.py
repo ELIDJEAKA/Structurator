@@ -51,6 +51,20 @@ def generate_diagram(structure, indent=0):
             diagram += generate_diagram(content, indent + 1)
     return diagram
 
+# Function to print ASCII art
+def print_ascii_art():
+    ascii_art = """
+             /$$                                     /$$                                    /$$                        
+            | $$                                    | $$                                   | $$                        
+  /$$$$$$$ /$$$$$$    /$$$$$$  /$$   /$$  /$$$$$$$ /$$$$$$   /$$   /$$  /$$$$$$  /$$$$$$  /$$$$$$    /$$$$$$   /$$$$$$ 
+ /$$_____/|_  $$_/   /$$__  $$| $$  | $$ /$$_____/|_  $$_/  | $$  | $$ /$$__  $$|____  $$|_  $$_/   /$$__  $$ /$$__  $$
+|  $$$$$$   | $$    | $$  \__/| $$  | $$| $$        | $$    | $$  | $$| $$  \__/ /$$$$$$$  | $$    | $$  \ $$| $$  \__/
+ \____  $$  | $$ /$$| $$      | $$  | $$| $$        | $$ /$$| $$  | $$| $$      /$$__  $$  | $$ /$$| $$  | $$| $$      
+ /$$$$$$$/  |  $$$$/| $$      |  $$$$$$/|  $$$$$$$  |  $$$$/|  $$$$$$/| $$     |  $$$$$$$  |  $$$$/|  $$$$$$/| $$      
+|_______/    \___/  |__/       \______/  \_______/   \___/   \______/ |__/      \_______/   \___/   \______/ |__/  
+    """
+    print(ascii_art)
+
 # Main function
 def main(json_path, target_folder):
     if not os.path.exists(target_folder):
@@ -80,6 +94,7 @@ def main(json_path, target_folder):
         exit(1)
 
     print("Directory and file structure created successfully and diagram.md updated.")
+    print_ascii_art()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate directory structure from a JSON file.')
